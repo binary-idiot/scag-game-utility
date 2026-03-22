@@ -1,0 +1,11 @@
+@import './base.css';
+
+
+h1 {
+  font-weight: bold;
+}
+
+header {
+  background: var(--color-background-contrast);
+  color: var(--color-text-alt);
+}
