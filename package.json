@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
+    "@types/gapi": "^0.0.47",
     "@types/node": "^24.11.0",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/eslint-config-typescript": "^14.7.0",

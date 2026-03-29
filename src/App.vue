@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { loadScript } from 'vue-plugin-load-script'
+import { onMounted, ref } from 'vue';
+import { loadScript } from 'vue-plugin-load-script';
+import type gapi from 'gapi';
 
-declare const gapi: any
+declare const gapi: gapi;
 declare const google: any
 
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
@@ -16,7 +17,8 @@ let gapiInited: boolean = false
 let gisInited: boolean = false
 
 const authEnabled = ref(false)
-const signoutEnabled = ref()
+const signoutEnabled = ref(false)
+const content = ref()
 
 function maybeEnableAuth(): void {
   if (gapiInited && gisInited) {
@@ -29,7 +31,8 @@ function handleAuthClick(): void {
     if (response.error !== undefined) {
       throw response
     }
-    signoutEnabled.value = true
+    signoutEnabled.value = true;
+    await listMajors();
   }
 
   if (gapi.client.getToken() === null) {
@@ -55,6 +58,30 @@ async function initializeGAPIClient(): Promise<void> {
   })
   gapiInited = true
   maybeEnableAuth()
+}
+
+async function listMajors(): Promise<void> {
+  let response;
+  try {
+    // Fetch first 10 files
+    response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
+      range: 'Class Data!A2:E',
+    });
+  } catch (err: any) {
+    content.value = err.message;
+    return;
+  }
+  const range = response.result;
+  if (!range || !range.values || range.values.length == 0) {
+    content.value = 'No values found.';
+    return;
+  }
+  // Flatten to string to display
+  const output = range.values.reduce(
+    (str, row) => `${str}${row[0]}, ${row[4]}\n`,
+    'Name, Major:\n');
+  content.value = output;
 }
 
 onMounted(() => {
@@ -86,7 +113,9 @@ onMounted(() => {
     </button>
   </header>
 
-  <main></main>
+  <main>
+    {{content}}
+  </main>
 </template>
 
 <style scoped>
