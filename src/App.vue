@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { loadScript } from 'vue-plugin-load-script';
-import type gapi from 'gapi';
 
-declare const gapi: gapi;
-declare const google: any
+declare const google: any;
 
 const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
@@ -114,7 +112,7 @@ onMounted(() => {
   </header>
 
   <main>
-    {{content}}
+    {{ content }}
   </main>
 </template>
 
