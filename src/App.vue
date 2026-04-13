@@ -1,61 +1,40 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import {  GoogleAuthService } from "@/services/GoogleAuth.service.ts";
+import { onMounted, type Ref, ref } from 'vue'
+import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
+import { type Router, useRouter } from 'vue-router'
 
-const content = ref()
+const router: Router = useRouter()
 const googleAuthService: GoogleAuthService = new GoogleAuthService();
 
-async function listMajors(): Promise<void> {
-  let response;
-  try {
-    // Fetch first 10 files
-    response = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
-      range: 'Class Data!A2:E',
-    });
-  } catch (err: any) {
-    content.value = err.message;
-    return;
-  }
-  const range = response.result;
-  if (!range || !range.values || range.values.length == 0) {
-    content.value = 'No values found.';
-    return;
-  }
-  // Flatten to string to display
-  const output = range.values.reduce(
-    (str, row) => `${str}${row[0]}, ${row[4]}\n`,
-    'Name, Major:\n');
-  content.value = output;
-}
-
-async function handleAuthClick() {
-  googleAuthService.Authenticate(listMajors);
-}
+const appLoaded: Ref<boolean> = ref(false)
 
 async function handleSignOutClick() {
-  googleAuthService.SignOut();
+  googleAuthService.SignOut(() => {
+    router.push('/login')
+  })
 }
 
 onMounted(() => {
-  googleAuthService.Initialize()
+  googleAuthService.Initialize().then(() => {
+    appLoaded.value = true
+  })
 })
 </script>
 
 <template>
   <header>
     <h1>SCAG Game Utility</h1>
-
-    <button v-bind:disabled="!googleAuthService.AuthEnabled.value" @click="handleAuthClick" id="auth-btn">
-      {{ googleAuthService.Authenticated.value ? 'Refresh' : 'Authorize' }}
-    </button>
-    <button v-bind:disabled="!(googleAuthService.AuthEnabled.value && googleAuthService.Authenticated.value)" @click="handleSignOutClick" id="signout-btn">
+    <button
+      v-if="googleAuthService.AuthEnabled.value && googleAuthService.Authenticated.value"
+      @click="handleSignOutClick"
+      id="signout-btn"
+    >
       SignOut
     </button>
   </header>
 
   <main>
-    {{ content }}
+    <RouterView v-if="appLoaded"></RouterView>
   </main>
 </template>
 

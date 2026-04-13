@@ -16,12 +16,15 @@
   },
   "dependencies": {
     "vue": "^3.5.29",
-    "vue-plugin-load-script": "^2.1.1"
+    "vue-plugin-load-script": "^2.1.1",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
     "@types/gapi": "^0.0.47",
+    "@types/gapi.client.sheets-v4": "^0.0.4",
     "@types/google.accounts": "^0.0.18",
+    "@types/google.picker": "^0.0.52",
     "@types/node": "^24.11.0",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/eslint-config-typescript": "^14.7.0",

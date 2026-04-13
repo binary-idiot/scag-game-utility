@@ -6,7 +6,7 @@ export interface GoogleAuthService {
   Authenticated: Ref<boolean>;
   Initialize(): Promise<void>;
   Authenticate(OnAuth: () => void): void;
-  SignOut(): void;
+  SignOut(onSignOut: () => void): void;
 }
 
 export class GoogleAuthService implements GoogleAuthService {
@@ -17,7 +17,7 @@ export class GoogleAuthService implements GoogleAuthService {
   private readonly GAPIKey: string = import.meta.env.VITE_GOOGLE_API_KEY;
   private readonly GClientId: string = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-  private TokenClient: google.accounts.oauth2.TokenClient;
+  private TokenClient!: google.accounts.oauth2.TokenClient;
   private GapiInited: Ref<boolean> = ref(false);
   private GisInited: Ref<boolean> = ref(false);
 
@@ -41,15 +41,10 @@ export class GoogleAuthService implements GoogleAuthService {
     }
   }
 
-  Authenticate(OnAuth: () => void): void {
-    this.TokenClient.callback = async (response: { error: undefined; }) => {
-      if (response.error !== undefined) {
-        throw response
-      }
-      this.Authenticated.value = true;
-      OnAuth();
-    }
+  private onAuthCallback?: () => void;
 
+  Authenticate(onAuth: () => void): void {
+    this.onAuthCallback = onAuth;
     if (gapi.client.getToken() === null) {
       this.TokenClient.requestAccessToken({ prompt: 'consent' })
     } else {
@@ -57,11 +52,13 @@ export class GoogleAuthService implements GoogleAuthService {
     }
   }
 
-  SignOut(): void {
+  SignOut(onSignOut: () => void): void {
     const token = gapi.client.getToken()
     if (token !== null) {
-      google.accounts.oauth2.revoke(token.access_token)
-      gapi.client.setToken('')
+      google.accounts.oauth2.revoke(token.access_token, onSignOut)
+      gapi.client.setToken({
+        access_token: '',
+      })
       this.Authenticated.value = false
     }
   }
@@ -71,19 +68,31 @@ export class GoogleAuthService implements GoogleAuthService {
     this.TokenClient = google.accounts.oauth2.initTokenClient({
       client_id: this.GClientId,
       scope: this.SCOPES,
-      callback: '',
+      callback: (tokenResponse: google.accounts.oauth2.TokenResponse) => {
+        if (tokenResponse.error !== undefined) {
+          throw tokenResponse
+        }
+        this.Authenticated.value = true;
+        if (this.onAuthCallback) {
+          this.onAuthCallback();
+          this.onAuthCallback = undefined;
+        }
+      },
     })
     this.GisInited.value = true;
   }
 
   private async initializeGAPI(){
     await loadScript('https://apis.google.com/js/api.js');
-    gapi.load('client', async () => {
-      await gapi.client.init({
-        apiKey: this.GAPIKey,
-        discoveryDocs: [this.DISCOVERY_DOC],
+    return new Promise<void>((resolve) => {
+      gapi.load('client', async () => {
+        await gapi.client.init({
+          apiKey: this.GAPIKey,
+          discoveryDocs: [this.DISCOVERY_DOC],
+        })
+        this.GapiInited.value = true;
+        resolve();
       })
-      this.GapiInited.value = true
     })
   }
 
