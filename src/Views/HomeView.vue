@@ -1,7 +1,11 @@
 ﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
 
-const content = ref()
+const googleAuthService = new GoogleAuthService();
+
+const content = ref();
+const pickerInited = ref(false);
 
 async function listMajors(): Promise<void> {
   let response
@@ -25,13 +29,39 @@ async function listMajors(): Promise<void> {
   content.value = output
 }
 
+function loadPicker() {
+  gapi.load('picker', () => {
+    pickerInited.value = true;
+  });
+}
+
+function showPicker() {
+  const accessToken = googleAuthService.GetToken();
+  if(!accessToken) {
+    throw new Error('Auth token not found')
+  }
+
+  const picker = new google.picker.PickerBuilder()
+    .addView(google.picker.ViewId.SPREADSHEETS)
+    .setOAuthToken(accessToken)
+    .setDeveloperKey(googleAuthService.GAPIKey)
+    .setAppId(googleAuthService.GAppID)
+    .setCallback((data) => {
+      content.value = JSON.stringify(data, null, 2)
+    })
+    .build()
+  picker.setVisible(true)
+}
+
 onMounted(() => {
-  listMajors();
+  // listMajors();
+  loadPicker();
 })
 </script>
 
 <template>
   {{ content }}
+  <button v-bind:disabled="!pickerInited" @click="showPicker">Show Picker</button>
 </template>
 
 <style scoped></style>

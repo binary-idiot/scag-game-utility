@@ -1,25 +1,30 @@
 ﻿import {loadScript} from "vue-plugin-load-script";
 import {computed, type Ref, ref} from "vue";
 
-export interface GoogleAuthService {
+export interface IGoogleAuthService {
+  GAPIKey: string;
+  GClientId: string;
+  GAppID: string;
   AuthEnabled: Ref<boolean>;
   Authenticated: Ref<boolean>;
   Initialize(): Promise<void>;
   Authenticate(OnAuth: () => void): void;
   SignOut(onSignOut: () => void): void;
+  GetToken(): string | null;
 }
 
-export class GoogleAuthService implements GoogleAuthService {
+export class GoogleAuthService implements IGoogleAuthService {
   private static instance: GoogleAuthService;
   private readonly DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
-  private readonly SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
-
-  private readonly GAPIKey: string = import.meta.env.VITE_GOOGLE_API_KEY;
-  private readonly GClientId: string = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  private readonly SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly ';
 
   private TokenClient!: google.accounts.oauth2.TokenClient;
   private GapiInited: Ref<boolean> = ref(false);
   private GisInited: Ref<boolean> = ref(false);
+
+  readonly GAPIKey: string = import.meta.env.VITE_GOOGLE_API_KEY;
+  readonly GClientId: string = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  readonly GAppID: string = import.meta.env.VITE_GOOGLE_APP_ID;
 
   AuthEnabled: Ref<boolean> = computed(() => this.GapiInited.value && this.GisInited.value);
   Authenticated: Ref<boolean> = ref(false);
@@ -61,6 +66,10 @@ export class GoogleAuthService implements GoogleAuthService {
       })
       this.Authenticated.value = false
     }
+  }
+
+  GetToken(): string | null {
+    return gapi.client.getToken()?.access_token ?? null;
   }
 
   private async initializeGIS(){
