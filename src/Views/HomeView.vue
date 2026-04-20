@@ -1,43 +1,39 @@
 ﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
+import Response = google.picker.Response
 
-const googleAuthService = new GoogleAuthService();
+const googleAuthService = new GoogleAuthService()
 
-const content = ref();
-const pickerInited = ref(false);
+const content = ref()
+const pickerInited = ref(false)
 
-async function listMajors(): Promise<void> {
+async function displaySheet(id: string): Promise<void> {
   let response
   try {
     // Fetch first 10 files
     response = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
-      range: 'Class Data!A2:E',
+      spreadsheetId: id,
+      range: 'Sheet1'
     })
   } catch (err: any) {
     content.value = err.message
     return
   }
-  const range = response.result
-  if (!range || !range.values || range.values.length == 0) {
-    content.value = 'No values found.'
-    return
-  }
-  // Flatten to string to display
-  const output = range.values.reduce((str: string, row: any[]) => `${str}${row[0]}, ${row[4]}\n`, 'Name, Major:\n')
-  content.value = output
+
+  console.log(response)
+  content.value = JSON.stringify(response.result, null, 2)
 }
 
 function loadPicker() {
   gapi.load('picker', () => {
-    pickerInited.value = true;
-  });
+    pickerInited.value = true
+  })
 }
 
 function showPicker() {
-  const accessToken = googleAuthService.GetToken();
-  if(!accessToken) {
+  const accessToken = googleAuthService.GetToken()
+  if (!accessToken) {
     throw new Error('Auth token not found')
   }
 
@@ -46,8 +42,11 @@ function showPicker() {
     .setOAuthToken(accessToken)
     .setDeveloperKey(googleAuthService.GAPIKey)
     .setAppId(googleAuthService.GAppID)
-    .setCallback((data) => {
-      content.value = JSON.stringify(data, null, 2)
+    .setCallback((data: google.picker.ResponseObject) => {
+      const selectedDocs = data.docs
+      if(selectedDocs !== undefined){
+        displaySheet(selectedDocs[0]!.id)
+      }
     })
     .build()
   picker.setVisible(true)
@@ -55,7 +54,7 @@ function showPicker() {
 
 onMounted(() => {
   // listMajors();
-  loadPicker();
+  loadPicker()
 })
 </script>
 
