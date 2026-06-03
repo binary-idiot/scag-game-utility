@@ -16,7 +16,7 @@ export interface IGoogleAuthService {
 export class GoogleAuthService implements IGoogleAuthService {
   private static instance: GoogleAuthService;
   private readonly DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
-  private readonly SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly ';
+  private readonly SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly';
 
   private TokenClient!: google.accounts.oauth2.TokenClient;
   private GapiInited: Ref<boolean> = ref(false);

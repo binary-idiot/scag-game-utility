@@ -1,7 +1,6 @@
 ﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
-import Response = google.picker.Response
 
 const googleAuthService = new GoogleAuthService()
 
@@ -42,6 +41,7 @@ function showPicker() {
     .setOAuthToken(accessToken)
     .setDeveloperKey(googleAuthService.GAPIKey)
     .setAppId(googleAuthService.GAppID)
+    .setOrigin(window.location.protocol + '//' + window.location.host)
     .setCallback((data: google.picker.ResponseObject) => {
       const selectedDocs = data.docs
       if(selectedDocs !== undefined){
