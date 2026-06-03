@@ -41,6 +41,7 @@
   --color-background-mute: var(--vt-c-white-mute);
 
   --color-background-contrast: var(--c-blue-main);
+  --color-background-contrast-alt: var(--c-yellow-contrast);
 
   --color-border: var(--vt-c-divider-light-2);
   --color-border-hover: var(--vt-c-divider-light-1);

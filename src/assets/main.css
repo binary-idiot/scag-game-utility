@@ -9,3 +9,15 @@ header {
   background: var(--color-background-contrast);
   color: var(--color-text-alt);
 }
+
+button {
+  background: var(--color-background-contrast-alt);
+  border: 3px solid var(--color-border);
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-border-hover);
+  }
+}
