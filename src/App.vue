@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { onMounted, type Ref, ref } from 'vue'
-import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
+import { onMounted, ref } from 'vue'
+import { useGoogleAuth } from '@/composables/useGoogleAuth.ts'
 import { type Router, useRouter } from 'vue-router'
 
 const router: Router = useRouter()
-const googleAuthService: GoogleAuthService = new GoogleAuthService();
+const { authEnabled, authenticated, initialize, signOut } = useGoogleAuth()
 
-const appLoaded: Ref<boolean> = ref(false)
+const appLoaded = ref(false)
 
 async function handleSignOutClick() {
-  googleAuthService.SignOut(() => {
+  signOut(() => {
     router.push('/login')
   })
 }
 
 onMounted(() => {
-  googleAuthService.Initialize().then(() => {
+  initialize().then(() => {
     appLoaded.value = true
   })
 })
@@ -25,7 +25,7 @@ onMounted(() => {
   <header>
     <h1>SCAG Game Utility</h1>
     <button
-      v-if="googleAuthService.AuthEnabled.value && googleAuthService.Authenticated.value"
+      v-if="authEnabled && authenticated"
       @click="handleSignOutClick"
       id="signout-btn"
     >

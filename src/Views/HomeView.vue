@@ -1,8 +1,8 @@
 ﻿<script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
+import { useGoogleAuth } from '@/composables/useGoogleAuth.ts'
 
-const googleAuthService = new GoogleAuthService()
+const { getToken, GAPIKey, GAppID } = useGoogleAuth()
 
 const content = ref()
 const pickerInited = ref(false)
@@ -31,7 +31,7 @@ function loadPicker() {
 }
 
 function showPicker() {
-  const accessToken = googleAuthService.GetToken()
+  const accessToken = getToken()
   if (!accessToken) {
     throw new Error('Auth token not found')
   }
@@ -39,8 +39,8 @@ function showPicker() {
   const picker = new google.picker.PickerBuilder()
     .addView(google.picker.ViewId.SPREADSHEETS)
     .setOAuthToken(accessToken)
-    .setDeveloperKey(googleAuthService.GAPIKey)
-    .setAppId(googleAuthService.GAppID)
+    .setDeveloperKey(GAPIKey)
+    .setAppId(GAppID)
     .setOrigin(window.location.protocol + '//' + window.location.host)
     .setCallback((data: google.picker.ResponseObject) => {
       const selectedDocs = data.docs

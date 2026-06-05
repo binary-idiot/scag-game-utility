@@ -1,11 +1,11 @@
 ﻿<script setup lang="ts">
 import { type Router, useRouter } from 'vue-router'
-import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
+import { useGoogleAuth } from '@/composables/useGoogleAuth.ts'
 
 const router: Router = useRouter()
-const googleAuthService: GoogleAuthService = new GoogleAuthService()
+const { authenticate } = useGoogleAuth()
 async function handleAuthClick() {
-  googleAuthService.Authenticate(onAuthenticated)
+  authenticate(onAuthenticated)
 }
 
 function onAuthenticated() {

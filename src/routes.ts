@@ -1,9 +1,9 @@
 ﻿import HomeView from '@/Views/HomeView.vue'
 import LoginView from '@/Views/LoginView.vue'
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { GoogleAuthService } from '@/services/GoogleAuth.service.ts'
+import { useGoogleAuth } from '@/composables/useGoogleAuth.ts'
 
-const googleAuthService: GoogleAuthService = new GoogleAuthService();
+const { authenticated } = useGoogleAuth()
 
 const routes : RouteRecordRaw[] = [
   {
@@ -15,7 +15,7 @@ const routes : RouteRecordRaw[] = [
     path: '/login',
     name: 'login',
     beforeEnter: (to, from) => {
-      if(googleAuthService.Authenticated.value) {
+      if(authenticated.value) {
         return {name: 'home'}
       }
     },
@@ -28,7 +28,7 @@ export const router = createRouter(
 )
 
 router.beforeEach((to, from) => {
-  if(!googleAuthService.Authenticated.value && to.name !== 'login') {
+  if(!authenticated.value && to.name !== 'login') {
     return {name: 'login'}
   }
 })
